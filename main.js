@@ -6,6 +6,7 @@ window.Node = Backbone.Model.extend({
         "title":"",
         "type":"",
         "description":"",
+        "children":[]
     }
 });
 
@@ -16,7 +17,6 @@ window.NodeCollection = Backbone.Collection.extend({
     // @todo REST backend
     //url:"../api/wines"
     comparator: function(node) {
-        console.log("NodeCollection sort");
         return node.get('title');
     }
 });
@@ -26,6 +26,7 @@ window.NodeCollection = Backbone.Collection.extend({
 window.NodeListView = Backbone.View.extend({
 
     tagName:'ul',
+    id:'node-list',
 
     initialize:function () {
         this.listenTo(this.model, 'reset', this.render);       
@@ -34,7 +35,6 @@ window.NodeListView = Backbone.View.extend({
     },
 
     render:function (eventName) {
-        //this.model.models.sort();
         this.$el.html('');
         app.nodeList.each(function(node) {
             this.$el.append( new NodeListItemView({ model: node }).render().el );
@@ -62,7 +62,17 @@ window.NodeListItemView = Backbone.View.extend({
     close:function () {
         $(this.el).unbind();
         $(this.el).remove();
-    }
+    },
+
+    events: {
+      'click .add-child': 'addNodeChild'
+    },  
+
+    addNodeChild:function () {
+        //console.log("NodeListItemView.addNodeChild " + this.model.get('title'));
+        Backbone.trigger("addchildnode", this.model);
+    }, 
+
 });
 
 window.NodeView = Backbone.View.extend({
@@ -123,6 +133,62 @@ window.NodeView = Backbone.View.extend({
         $(this.el).empty();
     }
 });
+/**/
+window.ChildListView = Backbone.View.extend({
+
+    tagName:'ul',
+    id:'node-children',
+
+    initialize:function () {
+        this.listenTo(this.model, 'reset', this.render);       
+        this.listenTo(this.model, 'change', this.render);
+        this.listenTo(this.model, 'add', this.render);
+        // subscribe to the event aggregator's event
+        Backbone.on("addchildnode", this.addChild, this);
+        //this.render;
+    },
+
+    addChild:function (node) {      
+        console.log("ChildListView: addchildnode triggered on: " + node.get('title'));  
+        this.model.get('children').push(node);
+        //console.log("ChildListView: child added: " + this.model.get('children'));
+        this.render();
+    },
+
+    render:function (eventName) {
+          console.log('ChildListView.render');   
+        this.$el.html('');
+        _.each(this.model.get('children'), function(node) {
+           console.log(node.get('title'));    
+           this.$el.append( new ChildListItemView({ model: node }).render().el );
+        },this);
+        return this;
+    }
+});
+
+window.ChildListItemView = Backbone.View.extend({
+
+    tagName:'li',
+    className:'single-child',
+
+    template:_.template($('#tpl-child-list-item').html()),
+
+    initialize:function () {
+        this.model.bind("change", this.render, this);
+        this.model.bind("destroy", this.close, this);
+    },
+
+    render:function (eventName) {
+        console.log('ChildListItemView.render');
+        $(this.el).html(this.template(this.model.toJSON()));
+        return this;
+    },
+
+    close:function () {
+        $(this.el).unbind();
+        $(this.el).remove();
+    }
+});
 
 window.HeaderView = Backbone.View.extend({
 
@@ -171,13 +237,28 @@ var AppRouter = Backbone.Router.extend({
 
     nodeDetails:function (id) {
         this.node = this.nodeList.get(id);
+
         if (app.nodeView) app.nodeView.close();
         this.nodeView = new NodeView({model:this.node});
         $('#content').html(this.nodeView.render().el);
+
+        if (app.childListView) app.childListView.close();
+        this.childListView = new ChildListView({model:this.node});
+        $('#children').html(this.childListView.render().el);
     }
 
 });
 
 var app = new AppRouter();
+
 Backbone.history.start();
+
+
+/*
+* @TODO
+* child view is for all nodes the same, why?
+* don't allow atach node as own child
+* don#t allow doublette children
+* allow detach children
+*/
 

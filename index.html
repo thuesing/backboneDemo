@@ -3,29 +3,99 @@
 <head>
 <title>Kohaerenz</title>
 <link rel="stylesheet" href="css/styles.css" />
+<style type="text/css">
+html,
+body {
+    margin: 0;
+    padding: 0;
+}
+
+button {
+    margin: 0;
+    padding: 0;
+
+
+
+}
+
+body {
+    font: 14px 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    line-height: 1.4em;
+    /*
+    background: #eaeaea url('bg.png');
+    color: #4d4d4d;
+    width: 550px;
+    margin: 0 auto;
+    -webkit-font-smoothing: antialiased;
+    -moz-font-smoothing: antialiased;
+    -ms-font-smoothing: antialiased;
+    -o-font-smoothing: antialiased;
+    font-smoothing: antialiased;
+    */
+}
+#node-list li .add-child {
+    float: left;
+    width: 30px;
+}
+/*
+#node-list li .add-child:after {
+    content: '+';
+}*/
+</style>
 </head>
 
 <body>
 
+
+
+
+
+
+
 <div id="header"><h1>Kohaerenz Wiki</h1></div>
+<table width="90%" cellspacing="5px" border=0>
+<tr>
+    <td with="30%">
+    <h2>All</h2>
+        <div id="sidebar" style="width: 400px;"></div>
+    </td>
+    <td with="30%">
+     
+        <div id="content">
+        <h2>Welcome to Kohaerenz Wiki</h2>
+        <p>
+        Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. 
+        </p>
+        </div>  
 
-<div id="sidebar"></div>
+            <h2>Children</h2>
+        <div id="children">&nbsp;</div>
 
-<div id="content">
-<h2>Welcome to Kohaerenz Wiki</h2>
-<p>
-Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam erat, sed diam voluptua. At vero eos et accusam et justo duo dolores et ea rebum. 
-</p>
-</div>
+    </td>
+    <td with="30%">
 
+    </td>
+</tr>
+
+
+
+
+
+</table>
 <!-- Templates -->
 <script type="text/template" id="tpl-header">
-    <span class="title">Backbone Cellar</span>
+    <span class="title">Kohärenz Wiki</span>
 	<button class="new">New node</button>
 </script>
 
 <script type="text/template" id="tpl-node-list-item">
+    <button class="add-child">+</button>
 	<a href='#nodes/<%= id %>'><%= title %></a>
+</script>
+
+<script type="text/template" id="tpl-child-list-item">
+    <button class="remove-child">-</button>
+    <a href='#nodes/<%= id %>'><%= title %></a>
 </script>
 
 <script type="text/template" id="tpl-node-details">
