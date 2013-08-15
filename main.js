@@ -1,6 +1,6 @@
 // Models
 window.Wine = Backbone.Model.extend({
-    urlRoot:"../api/wines",
+    //urlRoot:"../api/wines",
     defaults:{
         "id":null,
         "name":"",
@@ -15,7 +15,10 @@ window.Wine = Backbone.Model.extend({
 
 window.WineCollection = Backbone.Collection.extend({
     model:Wine,
-    url:"../api/wines"
+    // Save all of the todo items under the `"todos-backbone"` namespace.
+    localStorage: new Backbone.LocalStorage('bb-kohaerenz')
+    // @todo REST backend
+    //url:"../api/wines"
 });
 
 
@@ -132,6 +135,7 @@ window.HeaderView = Backbone.View.extend({
     },
 
     render:function (eventName) {
+        console.log('HERE we go!');
         $(this.el).html(this.template());
         return this;
     },
@@ -179,3 +183,4 @@ var AppRouter = Backbone.Router.extend({
 
 var app = new AppRouter();
 Backbone.history.start();
+
