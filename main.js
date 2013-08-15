@@ -1,20 +1,16 @@
 // Models
-window.Wine = Backbone.Model.extend({
+window.Node = Backbone.Model.extend({
     //urlRoot:"../api/wines",
     defaults:{
         "id":null,
         "name":"",
-        "grapes":"",
-        "country":"USA",
-        "region":"California",
-        "year":"",
+        "type":"",
         "description":"",
-        "picture":""
     }
 });
 
-window.WineCollection = Backbone.Collection.extend({
-    model:Wine,
+window.NodeCollection = Backbone.Collection.extend({
+    model:Node,
     // Save all of the todo items under the `"todos-backbone"` namespace.
     localStorage: new Backbone.LocalStorage('bb-kohaerenz')
     // @todo REST backend
@@ -23,31 +19,31 @@ window.WineCollection = Backbone.Collection.extend({
 
 
 // Views
-window.WineListView = Backbone.View.extend({
+window.NodeListView = Backbone.View.extend({
 
     tagName:'ul',
 
     initialize:function () {
         this.model.bind("reset", this.render, this);
         var self = this;
-        this.model.bind("add", function (wine) {
-            $(self.el).append(new WineListItemView({model:wine}).render().el);
+        this.model.bind("add", function (node) {
+            $(self.el).append(new NodeListItemView({model:node}).render().el);
         });
     },
 
     render:function (eventName) {
-        _.each(this.model.models, function (wine) {
-            $(this.el).append(new WineListItemView({model:wine}).render().el);
+        _.each(this.model.models, function (node) {
+            $(this.el).append(new NodeListItemView({model:node}).render().el);
         }, this);
         return this;
     }
 });
 
-window.WineListItemView = Backbone.View.extend({
+window.NodeListItemView = Backbone.View.extend({
 
     tagName:"li",
 
-    template:_.template($('#tpl-wine-list-item').html()),
+    template:_.template($('#tpl-node-list-item').html()),
 
     initialize:function () {
         this.model.bind("change", this.render, this);
@@ -65,9 +61,9 @@ window.WineListItemView = Backbone.View.extend({
     }
 });
 
-window.WineView = Backbone.View.extend({
+window.NodeView = Backbone.View.extend({
 
-    template:_.template($('#tpl-wine-details').html()),
+    template:_.template($('#tpl-node-details').html()),
 
     initialize:function () {
         this.model.bind("change", this.render, this);
@@ -80,8 +76,8 @@ window.WineView = Backbone.View.extend({
 
     events:{
         "change input":"change",
-        "click .save":"saveWine",
-        "click .delete":"deleteWine"
+        "click .save":"saveNode",
+        "click .delete":"deleteNode"
     },
 
     change:function (event) {
@@ -93,7 +89,7 @@ window.WineView = Backbone.View.extend({
         // this.model.set(change);
     },
 
-    saveWine:function () {
+    saveNode:function () {
         this.model.set({
             name:$('#name').val(),
             grapes:$('#grapes').val(),
@@ -103,17 +99,17 @@ window.WineView = Backbone.View.extend({
             description:$('#description').val()
         });
         if (this.model.isNew()) {
-            app.wineList.create(this.model);
+            app.nodeList.create(this.model);
         } else {
             this.model.save();
         }
         return false;
     },
 
-    deleteWine:function () {
+    deleteNode:function () {
         this.model.destroy({
             success:function () {
-                alert('Wine deleted successfully');
+                alert('Node deleted successfully');
                 window.history.back();
             }
         });
@@ -135,19 +131,18 @@ window.HeaderView = Backbone.View.extend({
     },
 
     render:function (eventName) {
-        console.log('HERE we go!');
         $(this.el).html(this.template());
         return this;
     },
 
     events:{
-        "click .new":"newWine"
+        "click .new":"newNode"
     },
 
-    newWine:function (event) {
-        if (app.wineView) app.wineView.close();
-        app.wineView = new WineView({model:new Wine()});
-        $('#content').html(app.wineView.render().el);
+    newNode:function (event) {
+        if (app.nodeView) app.nodeView.close();
+        app.nodeView = new NodeView({model:new Node()});
+        $('#content').html(app.nodeView.render().el);
         return false;
     }
 });
@@ -158,7 +153,7 @@ var AppRouter = Backbone.Router.extend({
 
     routes:{
         "":"list",
-        "wines/:id":"wineDetails"
+        "nodes/:id":"nodeDetails"
     },
 
     initialize:function () {
@@ -166,17 +161,17 @@ var AppRouter = Backbone.Router.extend({
     },
 
     list:function () {
-        this.wineList = new WineCollection();
-        this.wineListView = new WineListView({model:this.wineList});
-        this.wineList.fetch();
-        $('#sidebar').html(this.wineListView.render().el);
+        this.nodeList = new NodeCollection();
+        this.nodeListView = new NodeListView({model:this.nodeList});
+        this.nodeList.fetch();
+        $('#sidebar').html(this.nodeListView.render().el);
     },
 
-    wineDetails:function (id) {
-        this.wine = this.wineList.get(id);
-        if (app.wineView) app.wineView.close();
-        this.wineView = new WineView({model:this.wine});
-        $('#content').html(this.wineView.render().el);
+    nodeDetails:function (id) {
+        this.node = this.nodeList.get(id);
+        if (app.nodeView) app.nodeView.close();
+        this.nodeView = new NodeView({model:this.node});
+        $('#content').html(this.nodeView.render().el);
     }
 
 });
