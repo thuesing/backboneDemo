@@ -3,7 +3,7 @@ window.Node = Backbone.Model.extend({
     //urlRoot:"../api/wines",
     defaults:{
         "id":null,
-        "name":"",
+        "title":"",
         "type":"",
         "description":"",
     }
@@ -12,9 +12,13 @@ window.Node = Backbone.Model.extend({
 window.NodeCollection = Backbone.Collection.extend({
     model:Node,
     // Save all of the todo items under the `"todos-backbone"` namespace.
-    localStorage: new Backbone.LocalStorage('bb-kohaerenz')
+    localStorage: new Backbone.LocalStorage('bb-kohaerenz'),
     // @todo REST backend
     //url:"../api/wines"
+    comparator: function(node) {
+        console.log("NodeCollection sort");
+        return node.get('title');
+    }
 });
 
 
@@ -24,16 +28,16 @@ window.NodeListView = Backbone.View.extend({
     tagName:'ul',
 
     initialize:function () {
-        this.model.bind("reset", this.render, this);
-        var self = this;
-        this.model.bind("add", function (node) {
-            $(self.el).append(new NodeListItemView({model:node}).render().el);
-        });
+        this.listenTo(this.model, 'reset', this.render);       
+        this.listenTo(this.model, 'change', this.render);
+        this.listenTo(this.model, 'add', this.render);
     },
 
     render:function (eventName) {
-        _.each(this.model.models, function (node) {
-            $(this.el).append(new NodeListItemView({model:node}).render().el);
+        //this.model.models.sort();
+        this.$el.html('');
+        app.nodeList.each(function(node) {
+            this.$el.append( new NodeListItemView({ model: node }).render().el );
         }, this);
         return this;
     }
@@ -85,17 +89,14 @@ window.NodeView = Backbone.View.extend({
         console.log('changing ' + target.id + ' from: ' + target.defaultValue + ' to: ' + target.value);
         // You could change your model on the spot, like this:
         // var change = {};
-        // change[target.name] = target.value;
+        // change[target.title] = target.value;
         // this.model.set(change);
     },
 
     saveNode:function () {
         this.model.set({
-            name:$('#name').val(),
-            grapes:$('#grapes').val(),
-            country:$('#country').val(),
-            region:$('#region').val(),
-            year:$('#year').val(),
+            title:$('#title').val(),
+            type:$('#type').val(),
             description:$('#description').val()
         });
         if (this.model.isNew()) {
@@ -107,7 +108,8 @@ window.NodeView = Backbone.View.extend({
     },
 
     deleteNode:function () {
-        this.model.destroy({
+        // Destroys the model on the server by delegating an HTTP DELETE request to Backbone.sync. 
+        this.model.destroy({ 
             success:function () {
                 alert('Node deleted successfully');
                 window.history.back();
