@@ -163,6 +163,11 @@ window.ChildListView = Backbone.View.extend({
            this.$el.append( new ChildListItemView({ model: node }).render().el );
         },this);
         return this;
+    },
+
+    close:function () {
+        $(this.el).unbind();
+        $(this.el).empty();
     }
 });
 
