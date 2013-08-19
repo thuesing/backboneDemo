@@ -1,13 +1,21 @@
 // Models
 window.Node = Backbone.Model.extend({
     //urlRoot:"../api/wines",
-    defaults:{
-        "id":null,
-        "title":"",
-        "type":"",
-        "description":"",
-        "children":[]
-    }
+    // @see http://stackoverflow.com/questions/9974354/arrays-in-a-backbone-js-model-are-essentially-static
+      defaults: function() { 
+        return {
+            "id":null,
+            "title":"",
+            "type":"",
+            "description":"",
+            "childNodes":[]
+        };
+      }  ,
+    /*
+     toString: function() {
+       return "Model(" + JSON.stringify(this.attributes) + ")";
+     }
+     */
 });
 
 window.NodeCollection = Backbone.Collection.extend({
@@ -35,12 +43,19 @@ window.NodeListView = Backbone.View.extend({
     },
 
     render:function (eventName) {
+//        console.log('NodeListView.render');  
         this.$el.html('');
         app.nodeList.each(function(node) {
             this.$el.append( new NodeListItemView({ model: node }).render().el );
         }, this);
         return this;
+    },
+
+    close: function () {    
+           this.unbind(); // Unbind all local event bindings
+           this.remove(); // Remove view from DOM    
     }
+
 });
 
 window.NodeListItemView = Backbone.View.extend({
@@ -50,8 +65,8 @@ window.NodeListItemView = Backbone.View.extend({
     template:_.template($('#tpl-node-list-item').html()),
 
     initialize:function () {
-        this.model.bind("change", this.render, this);
-        this.model.bind("destroy", this.close, this);
+        this.listenTo(this.model, 'change', this.render);
+        this.listenTo(this.model, 'destroy', this.render);
     },
 
     render:function (eventName) {
@@ -59,20 +74,22 @@ window.NodeListItemView = Backbone.View.extend({
         return this;
     },
 
-    close:function () {
-        $(this.el).unbind();
-        $(this.el).remove();
-    },
-
     events: {
       'click .add-child': 'addNodeChild'
     },  
 
     addNodeChild:function () {
-        //console.log("NodeListItemView.addNodeChild " + this.model.get('title'));
-        Backbone.trigger("addchildnode", this.model);
-    }, 
+        console.log(app.node.get('title') + " addNodeChild " + this.model.get('title'));
+        //Backbone.trigger("addchildnode", this.model);
+        var children = app.node.get('childNodes');
+        children.push(this.model.id);
+        app.node.set('childNodes', children);
+    },
 
+    close: function () {    
+           this.unbind(); // Unbind all local event bindings
+           this.remove(); // Remove view from DOM    
+    }
 });
 
 window.NodeView = Backbone.View.extend({
@@ -80,7 +97,7 @@ window.NodeView = Backbone.View.extend({
     template:_.template($('#tpl-node-details').html()),
 
     initialize:function () {
-        this.model.bind("change", this.render, this);
+        this.listenTo(this.model, 'change', this.render);
     },
 
     render:function (eventName) {
@@ -128,9 +145,9 @@ window.NodeView = Backbone.View.extend({
         return false;
     },
 
-    close:function () {
-        $(this.el).unbind();
-        $(this.el).empty();
+    close: function () {    
+           this.unbind(); // Unbind all local event bindings
+           this.remove(); // Remove view from DOM    
     }
 });
 /**/
@@ -140,36 +157,48 @@ window.ChildListView = Backbone.View.extend({
     id:'node-children',
 
     initialize:function () {
+        /*
         this.listenTo(this.model, 'reset', this.render);       
         this.listenTo(this.model, 'change', this.render);
         this.listenTo(this.model, 'add', this.render);
+        */
         // subscribe to the event aggregator's event
-        Backbone.on("addchildnode", this.addChild, this);
+        //Backbone.on("addchildnode", this.addChild, this);
         //this.render;
     },
-
+/*
     addChild:function (node) {      
-        console.log("ChildListView: addchildnode triggered on: " + node.get('title'));  
-        this.model.get('children').push(node);
-        //console.log("ChildListView: child added: " + this.model.get('children'));
-        this.render();
+        if(this.model === app.node) {
+            app.node.get('childNodes').push(node.id);
+            //this.model.trigger("change");
+            //this.model.trigger("change:myArray");
+    //        this.model.save();
+    //        console.log(this.model.get('title'));
+    //        console.log(node);
+    //        console.log(this.model.get('childNodes'));
+            this.render();
+        } else {
+            console.log("Achtung hier!");
+        }
     },
-
+*/
     render:function (eventName) {
-          console.log('ChildListView.render');   
-        this.$el.html('');
-        _.each(this.model.get('children'), function(node) {
-           console.log(node.get('title'));    
-           this.$el.append( new ChildListItemView({ model: node }).render().el );
+//        console.log('render childList: ' + JSON.stringify(this.model.get('childNodes')));    
+        this.$el.empty();
+        _.each(this.model.get('childNodes'), function(nodeId) {
+            var node = app.nodeList.get(nodeId);          
+          //  this.$el.append( new ChildListItemView({ model: node }).render().el );
         },this);
         return this;
     },
 
-    close:function () {
-        $(this.el).unbind();
-        $(this.el).empty();
+    close: function () {    
+           this.unbind(); // Unbind all local event bindings
+           this.remove(); // Remove view from DOM    
     }
+
 });
+
 
 window.ChildListItemView = Backbone.View.extend({
 
@@ -179,20 +208,21 @@ window.ChildListItemView = Backbone.View.extend({
     template:_.template($('#tpl-child-list-item').html()),
 
     initialize:function () {
-        this.model.bind("change", this.render, this);
-        this.model.bind("destroy", this.close, this);
+        //this.listenTo(this.model, 'change', this.render);
+        //this.listenTo(this.model, 'destroy', this.render);
     },
 
     render:function (eventName) {
-        console.log('ChildListItemView.render');
+        //console.log('ChildListItemView.render');
         $(this.el).html(this.template(this.model.toJSON()));
         return this;
     },
 
-    close:function () {
-        $(this.el).unbind();
-        $(this.el).remove();
+    close: function () {    
+           this.unbind(); // Unbind all local event bindings
+           this.remove(); // Remove view from DOM    
     }
+
 });
 
 window.HeaderView = Backbone.View.extend({
@@ -234,23 +264,49 @@ var AppRouter = Backbone.Router.extend({
     },
 
     list:function () {
+       // if (app.nodeList) app.nodeList.close();
         this.nodeList = new NodeCollection();
+        if (app.nodeListView) app.nodeListView.close();
         this.nodeListView = new NodeListView({model:this.nodeList});
         this.nodeList.fetch();
         $('#sidebar').html(this.nodeListView.render().el);
     },
 
     nodeDetails:function (id) {
-        this.node = this.nodeList.get(id);
+        //console.log('#1');
+        //console.log(this);
+        //console.log('#2');
+        
+        //if (app.nodeList) app.nodeList.close();
+        this.nodeList = new NodeCollection();
+        this.nodeList.fetch();
+
+        app.node = this.node = this.nodeList.get(id);
+        console.log('reset node view and child list in nodeDetails');
+        console.log(app.node);
+        console.log(app.node.get('title') + ', child nodes: ' + JSON.stringify(app.node.get('childNodes')));
 
         if (app.nodeView) app.nodeView.close();
         this.nodeView = new NodeView({model:this.node});
         $('#content').html(this.nodeView.render().el);
+        //console.log('#1');
+
+        if (app.nodeListView) app.nodeListView.close();
+        this.nodeListView = new NodeListView({model:this.nodeList});
+        $('#sidebar').html(this.nodeListView.render().el);
 
         if (app.childListView) app.childListView.close();
+         if (app.childListView) app.childListView.remove();
         this.childListView = new ChildListView({model:this.node});
+        $('#children').html('');
+        //  console.log('#2');
         $('#children').html(this.childListView.render().el);
-    }
+
+    },
+
+     toString: function() {
+    return "Router(" + JSON.stringify(this.attributes) + ")";
+  }
 
 });
 
