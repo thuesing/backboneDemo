@@ -81,9 +81,10 @@ window.NodeListItemView = Backbone.View.extend({
     addNodeChild:function () {
         console.log(app.node.get('title') + " addNodeChild " + this.model.get('title'));
         //Backbone.trigger("addchildnode", this.model);
-        var children = app.node.get('childNodes');
-        children.push(this.model.id);
-        app.node.set('childNodes', children);
+        app.node.get('childNodes').push(this.model.id);
+        app.node.trigger("change");
+        //console.log(app.node.get('childNodes').toString());
+        app.node.save();
     },
 
     close: function () {    
@@ -157,11 +158,10 @@ window.ChildListView = Backbone.View.extend({
     id:'node-children',
 
     initialize:function () {
-        /*
-        this.listenTo(this.model, 'reset', this.render);       
+ 
+        //this.listenTo(this.model, 'reset', this.render);       
         this.listenTo(this.model, 'change', this.render);
-        this.listenTo(this.model, 'add', this.render);
-        */
+        //this.listenTo(this.model, 'add', this.render);
         // subscribe to the event aggregator's event
         //Backbone.on("addchildnode", this.addChild, this);
         //this.render;
@@ -183,11 +183,11 @@ window.ChildListView = Backbone.View.extend({
     },
 */
     render:function (eventName) {
-//        console.log('render childList: ' + JSON.stringify(this.model.get('childNodes')));    
+        console.log('render childList: ' + JSON.stringify(this.model.get('childNodes')));    
         this.$el.empty();
         _.each(this.model.get('childNodes'), function(nodeId) {
             var node = app.nodeList.get(nodeId);          
-          //  this.$el.append( new ChildListItemView({ model: node }).render().el );
+            this.$el.append( new ChildListItemView({ model: node }).render().el );
         },this);
         return this;
     },
