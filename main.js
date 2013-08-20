@@ -75,7 +75,7 @@ window.NodeListItemView = Backbone.View.extend({
     },
 
     events: {
-      'click .add-child': 'addNodeChild'
+      'click .add-child': 'addNodeChild',
     },  
 
     addNodeChild:function () {
@@ -217,6 +217,20 @@ window.ChildListItemView = Backbone.View.extend({
         $(this.el).html(this.template(this.model.toJSON()));
         return this;
     },
+
+
+    events: {
+      'click .remove-child': 'removeNodeChild'
+    },  
+
+    removeNodeChild:function () {
+        console.log(app.node.get('title') + " removeNodeChild " + this.model.get('title'));
+        //Backbone.trigger("addchildnode", this.model);
+        app.node.set('childNodes', _.without(app.node.get('childNodes'), this.model.id));
+        app.node.trigger("change");
+        console.log(app.node.get('childNodes').toString());
+        app.node.save();
+    },    
 
     close: function () {    
            this.unbind(); // Unbind all local event bindings
