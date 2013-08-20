@@ -40,12 +40,88 @@ body {
     content: '+';
 }*/
 
-#node-children li .remove-child {
+button.remove-child {
     float: left;
     width: 30px;
 }
 
 </style>
+<style>
+        .bookContainer {
+            width: 300px; height: 50px; border: solid; margin-bottom: 5px;
+        }
+        header, section {
+            display: block;
+        }
+        body {
+            font-family: 'Droid Serif';
+        }
+        h1, h2 {
+            text-align: center;
+            font-weight: normal;
+        }
+        #features {
+            margin: auto;
+            width: 460px;
+            font-size: 0.9em;
+        }
+        .connected, .sortable, .exclude, .handles {
+            margin: auto;
+            padding: 0;
+            width: 310px;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        .sortable.grid {
+            overflow: hidden;
+        }
+        .connected li, .sortable li, .exclude li, .handles li {
+            list-style: none;
+            border: 1px solid #CCC;
+            background: #F6F6F6;
+            font-family: "Tahoma";
+            color: #1C94C4;
+            margin: 5px;
+            padding: 5px;
+            height: 22px;
+        }
+        .handles span {
+            cursor: move;
+        }
+        li.disabled {
+            opacity: 0.5;
+        }
+        .sortable.grid li {
+            line-height: 80px;
+            float: left;
+            width: 80px;
+            height: 80px;
+            text-align: center;
+        }
+        li.highlight {
+            background: #FEE25F;
+        }
+        #connected {
+            width: 440px;
+            overflow: hidden;
+            margin: auto;
+        }
+        .connected {
+            float: left;
+            width: 200px;
+        }
+        .connected.no2 {
+            float: right;
+        }
+        li.sortable-placeholder {
+            border: 1px dashed #CCC;
+            background: none;
+        }
+    </style>
 </head>
 
 <body>
@@ -77,7 +153,9 @@ body {
     <td with="30%">
 
             <h2>Children</h2>
-        <div id="children">&nbsp;</div>
+        <div id="child-list">
+            <ul id="children" class="sortable"></ul>
+        </div>
     </td>
 </tr>
 
@@ -93,6 +171,11 @@ body {
 </script>
 
 <script type="text/template" id="tpl-node-list-item">
+<!--
+see http://dailyjs.com/2013/04/04/backbone-tutorial-16/
+<a href="#" class="handle pull-right"><i class="icon-move"></i></a>
+https://github.com/alexyoung/dailyjs-backbone-tutorial/commit/e9edfa3157fd460a9c82faa6c6bb9d87ccdca443
+-->
     <button class="add-child">+</button>
 	<a href='#nodes/<%= id %>'><%= title %></a>
 </script>
@@ -125,6 +208,7 @@ body {
     <script src="bower_components/underscore/underscore-min.js"></script>
     <script src="bower_components/backbone/backbone-min.js"></script>
     <script src="bower_components/backbone.localStorage/backbone.localStorage.js"></script>
+    <script src="bower_components/html5sortable/jquery.sortable.js"></script>
 
     <script src="models.js"></script>
     <script src="collections.js"></script>

@@ -2,7 +2,7 @@
 window.ChildListView = Backbone.View.extend({
 
     tagName:'ul',
-    id:'node-children',
+    id:'children',
 
     initialize:function () {
  
@@ -36,8 +36,42 @@ window.ChildListView = Backbone.View.extend({
             var node = app.nodeList.get(nodeId);          
             this.$el.append( new ChildListItemView({ model: node }).render().el );
         },this);
+
+        this.makeSortable();
+
         return this;
     },
+
+    events: {
+        'sortupdate #children': 'saveChildOrder'
+    },
+
+    makeSortable: function() {     
+      //if (this.collection.length) { @TODO make children collection based
+      if (this.model.get('childNodes').length) { // @TODO make children collection based
+        // see https://github.com/farhadi/html5sortable
+        // http://farhadi.ir/projects/html5sortable/
+        this.$el.sortable('destroy'); // remove
+        // from http://dailyjs.com/2013/04/04/backbone-tutorial-16/
+        this.$el.sortable().bind('sortupdate', _.bind(this.saveChildOrder, this)); // bind again
+      }
+    },
+
+    saveChildOrder: function(e, o) {
+
+        var newChildOrder = [];
+            
+         _.each(this.$el.find('li'), function(id) {
+            //console.log($(id).attr('childid'));
+            newChildOrder.push($(id).attr('childid'));
+         } ,this);
+        //console.log(newChildOrder);
+        //Backbone.trigger("addchildnode", this.model);
+        app.node.set('childNodes', newChildOrder);
+        app.node.trigger("change");
+        app.node.save();
+    },
+
 
     close: function () {    
            this.unbind(); // Unbind all local event bindings
@@ -62,6 +96,7 @@ window.ChildListItemView = Backbone.View.extend({
     render:function (eventName) {
         //console.log('ChildListItemView.render');
         $(this.el).html(this.template(this.model.toJSON()));
+        this.$el.attr( "childid", this.model.id );
         return this;
     },
 

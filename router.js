@@ -47,9 +47,9 @@ var AppRouter = Backbone.Router.extend({
         if (app.childListView) app.childListView.close();
          if (app.childListView) app.childListView.remove();
         this.childListView = new ChildListView({model:this.node});
-        $('#children').html('');
+        $('#child-list').html('');
         //  console.log('#2');
-        $('#children').html(this.childListView.render().el);
+        $('#child-list').html(this.childListView.render().el);
 
     },
 
